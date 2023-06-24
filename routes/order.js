@@ -46,30 +46,37 @@ router.get("/weekOrder",async(req,res)=>{
        const orders = await Order.find().select("-__v")
        const weekOrders = orders.filter((order)=>(new Date(order.createdAt).getTime() >= (new Date().getTime())/7 ));
        const orderData = {} 
+       const orderRevenue = {}
 
        weekOrders.map(order => {
          for (let i = 0; i < 7; i++) {
-            const dayTime =   new Date().getTime() - i*3600*1000*24
+            const dayTime =   new Date(new Date().toDateString()).getTime() - i*3600*1000*24
             const date = new Date(dayTime).getDate();
             const monthInNumber = new Date(dayTime).getMonth();
             const monthList = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sept","Oct","Nov","Dec"]
             const month = monthList[monthInNumber+1];
-            console.log(monthInNumber);
+            // console.log(monthInNumber);
             const dateString = `${date} ${month}`
-            console.log("date", dateString);
-
-            if(orderData[dateString]!==undefined && (new Date(order.createdAt).getTime() <= new Date().getTime()- i*3600*1000*24)){
+            // console.log("date", dateString);
+                 
+            if(orderData[dateString]!==undefined && orderRevenue[dateString]!==undefined && (new Date(new Date(order.createdAt).toDateString()).getTime() === new Date(new Date().toDateString()).getTime()- i*3600*1000*24)){
+                // console.log(dateString,order);
                 orderData[dateString] += order.orderQty
-            }else if(orderData[dateString]===undefined && (new Date(order.createdAt).getTime() <= new Date().getTime()- i*3600*1000*24)){
-                orderData[dateString] = order.orderQty
+                orderRevenue[dateString] += order.orderAmt
+            }else if(orderData[dateString]===undefined && orderRevenue[dateString]===undefined ){
+                if(new Date(new Date(order.createdAt).toDateString()).getTime() === new Date(new Date().toDateString()).getTime()- i*3600*1000*24){
+                    orderData[dateString] = order.orderQty
+                    orderRevenue[dateString] = order.orderAmt
+
+                }else{ 
+                    orderData[dateString] = 0
+                    orderRevenue[dateString] = 0
+            }  
             }
-            else{ 
-                orderData[dateString] = 0
-        }  
          }  
        });
 
-       res.status(200).send({success:true,value:orderData})
+       res.status(200).send({success:true,orderData,orderRevenue})
     } catch (err) {
         console.log(err);
         res.status(500).send({success:false, reason:err})

@@ -8,10 +8,12 @@ const product = require('./routes/product')
 const order = require('./routes/order');
 
 
+
 mongoose.connect(process.env.DATABASE_URL)
 .then(()=>console.log("successfull connected")
 )
 .catch((err)=>console.log(`failed to connect ${err}`))
+
 
 
 //middleware
@@ -24,10 +26,13 @@ app.use("/api/order",order);
 app.get("/",async(req,res)=>{
     try {
         res.status(200).send("backend working...")
+        
     } catch (err) {
         console.log(err);
     }
 })
+
+
 
 app.listen(process.env.PORT,()=>{
     console.log(`listening to ${process.env.PORT} `)});
